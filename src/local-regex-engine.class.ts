@@ -3,14 +3,17 @@ import { RegexEngine } from './regex-engine.class'
 import { IConstructedRegex,
          ICumulativeTestResults,
          IDelimPair,
+         IInvalidConstructedRegex,
          // IRegex,
          IRegexConfig,
          IRegexError,
+         IRegexIsInValid,
+         IRegexIsValid,
          IRegexMatch,
          IRegexPair,
          IRegexTestResult,
          ISimpleTestResult,
-         IValidatedRegex,
+        //  IValidatedRegex,
          IValidConstructedRegex
       } from './regex-engine.interfaces'
 
@@ -78,30 +81,14 @@ export class LocalRegex extends RegexEngine {
   public replace(input: string[], regexes: IRegexPair[]) : string[] {
     const constructedRegexes = this._getConstructedRegexes(regexes);
 
-    const validRegexes = constructedRegexes.filter(
-      (regex: IConstructedRegex) : boolean => regex.error.valid
-    ).map((regex: IConstructedRegex) : IValidConstructedRegex => {
-      return {
-        error: {
-          error: null,
-          valid: true
-        },
-        find: regex.find,
-        regexID: regex.regexID,
-        replace: regex.replace
-      }
-    });
-
-    const reducer = (accumulator: string, regex : IValidConstructedRegex) : string => {
-      if (regex.error.valid === true) {
+    const regexReducer = (accumulator: string, regex : IValidConstructedRegex) : string => {
         return accumulator.replace(regex.find, regex.replace);
-      } else {
-        return accumulator;
-      }
     }
 
+    const validRegexes : IValidConstructedRegex[] = constructedRegexes.filter(this.isValidRegex);
+
     const output = input.map(str => {
-      return validRegexes.reduce(reducer, str);
+      return validRegexes.reduce(regexReducer, str);
     });
 
     return output;
@@ -120,24 +107,36 @@ export class LocalRegex extends RegexEngine {
    * @returns an array of regex test results
    */
   public match(input: string[], regexes: IRegexPair[]) : ICumulativeTestResults[] {
-    const innerMap = (str: string) => (regex: IConstructedRegex) : IRegexTestResult => {
+    const constructedRegexes = this._getConstructedRegexes(regexes);
+
+    const innerMap = (str: string) => (regex : IValidConstructedRegex | IInvalidConstructedRegex) : IRegexTestResult => {
       // let ok : boolean = false;
       let results : ISimpleTestResult = {
         executionTime: 0,
         matches: []
       };
-      if (this.isValidRegEx(regex.find) !== false) {
+      let isValid : IRegexIsValid | IRegexIsInValid = { valid: true };
+      if (this.isValidRegex(regex)) {
         if (regex.find.global === true) {
           results  = this._regexTestGlobal(regex.find, str);
           // ok = true;
         } else {
           results  = this._regexTestNonGlobal(regex.find, str);
         }
-        str = str.replace(regex.find, regex.replace);
+
+        if (this.chainRegexes) {
+          // modify string so next regex uses the updated version
+          str = str.replace(regex.find, regex.replace);
+        }
+      } else if (this.regexHasError(regex)) {
+        isValid = {
+          error: regex.error,
+          valid: false
+        }
       }
 
       const output : IRegexTestResult = {
-        error: regex.error,
+        error: isValid,
         executionTime: results.executionTime,
         matches: results.matches,
         regexID: regex.regexID
@@ -147,8 +146,7 @@ export class LocalRegex extends RegexEngine {
     }
 
     const outerMap = (str: string, i: number) : ICumulativeTestResults => {
-      const allRegexes : IConstructedRegex[] = this._getConstructedRegexes(regexes);
-      const allRegexMatches : IRegexTestResult[] = allRegexes.map(innerMap(str));
+      const allRegexMatches : IRegexTestResult[] = constructedRegexes.map(innerMap(str));
 
       const cumulativeTime = allRegexMatches.reduce((accum, matchObj) => {
          return accum + matchObj.executionTime
@@ -170,39 +168,52 @@ export class LocalRegex extends RegexEngine {
    *
    * @param regexes a list of one or more regular expression pairs
    */
-  protected _getConstructedRegexes(regexes: IRegexPair[]) : IConstructedRegex[] {
-    return regexes.map(regexPair => {
-      // let tmpRegexp : null | RegExp | OuterXRegExp = null;
-      let tmpRegexp : null | RegExp = null;
-      let regexError : null | IRegexError = null;
-      let regexValid = true;
-      let isValid : IValidatedRegex = {
-        error: null,
-        valid: true
-      }
+  protected _getConstructedRegexes(regexes: IRegexPair[]) : Array<(IValidConstructedRegex | IInvalidConstructedRegex)> {
+    let tmpRegex : null | RegExp = null;
+
+    const regexMap = (regexPair : IRegexPair) : IValidConstructedRegex | IInvalidConstructedRegex => {
       try {
-        tmpRegexp = this._getRegexObject(regexPair.regex, regexPair.modifiers);
+        tmpRegex = this._getRegexObject(regexPair.regex, regexPair.modifiers);
       } catch(e) {
-        regexError = {
-        // isValid.error = {
-          badCharacter: '',
-          message: '',
-          offset: -1,
-          rawMessage: e,
-          regexID: regexPair.id
+        return {
+          error: {
+            badCharacter: '',
+            messages: [''],
+            offset: -1,
+            rawMessage: e.message,
+            regexID: regexPair.id
+          },
+          regexID: regexPair.id,
+          replace: regexPair.replace
         };
-        // isValid.valid = false;
-        regexValid = false;
       }
-      isValid = { error: regexError, valid: regexValid }
       return {
-        // error: isValid,
-        error: isValid,
-        find: tmpRegexp,
+        find: tmpRegex,
         regexID: regexPair.id,
         replace: regexPair.replace
-      };
-    });
+      }
+    }
+
+    return regexes.map(regexMap);
+  }
+
+  protected _getValidConstructedRegexes (regexes: IRegexPair[]) : IValidConstructedRegex[] {
+    let tmpRegex : null | RegExp = null;
+
+    const regexMap = (regexPair : IRegexPair) : IValidConstructedRegex | false => {
+      try {
+        tmpRegex = this._getRegexObject(regexPair.regex, regexPair.modifiers);
+      } catch(e) {
+        return false;
+      }
+      return {
+        find: tmpRegex,
+        regexID: regexPair.id,
+        replace: regexPair.replace
+      }
+    }
+
+    return regexes.map(regexMap).filter(this.isValidRegex);
   }
 
   /**
@@ -287,7 +298,13 @@ export class LocalRegex extends RegexEngine {
 
     const startTime : number = Date.now();
     const tmp = regex.exec(input);
-    output.executionTime = (Date.now() - startTime);
+    const execTime = (Date.now() - startTime)
+
+    // This is just to get around TS lint issue
+    output = {
+      executionTime: execTime,
+      matches: []
+    };
 
     if (tmp !== null) {
       let newMatch : IRegexMatch;
@@ -310,18 +327,22 @@ export class LocalRegex extends RegexEngine {
    * @param matches object returned by RegExp.prototype.exec()
    */
   protected _regexTestInner(matches: RegExpExecArray) : IRegexMatch {
-    let newMatch : IRegexMatch = {
-      parts: {},
-      position: 0,
-      whole: matches[0]
-    };
-    for (let a = 0; a < matches.length; a += 1) {
-      if (a > 0) {
+    let matchParts : any = {};
+
+    // This is just to get around TS lint issue
+    matchParts = {};
+
+    if (matches.length > 1) {
+      for (let a = 1; a < matches.length; a += 1) {
         const b = "" + a;
-        newMatch.parts[b] = matches[a];
+        matchParts[b] = matches[a];
       }
     }
 
-    return newMatch
+    return {
+      parts: matchParts,
+      position: 0,
+      whole: matches[0]
+    };
   }
 }

@@ -1,3 +1,4 @@
+import XRegExp from 'XRegExp';
 import { LocalRegex } from "./local-regex-engine.class";
 import { IRegexConfig } from "./regex-engine.interfaces";
 

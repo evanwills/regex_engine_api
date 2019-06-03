@@ -47,7 +47,7 @@ export abstract class RegexEngine {
    *         mode if chainRegexes is TRUE, the find/replace is done
    *         on input before handing input off to next regex pair
    */
-  protected chaingRegexes: boolean = true;
+  protected chainRegexes: boolean = true;
 
   /**
    * @property defaultDelimiters - stores default opening and closing
@@ -104,7 +104,7 @@ export abstract class RegexEngine {
     this.apiURL = apiURL;
     this.docsURL = docsURL;
 
-    this.chaingRegexes = chainRegexes;
+    this.chainRegexes = chainRegexes;
 
     this.defaultModifiers = defaultModifiers;
     this.modifiersLabel = modifiersLabel;
@@ -389,8 +389,12 @@ export abstract class RegexEngine {
    * isValidRegex() is a Type Guard method to ensure the regex is valid
    * @param regex
    */
-  protected isValidRegex (regex: IValidConstructedRegex | IInvalidConstructedRegex) : regex is IValidConstructedRegex {
-    return (regex as IValidConstructedRegex).find !== undefined;
+  protected isValidRegex (regex: IValidConstructedRegex | IInvalidConstructedRegex | false) : regex is IValidConstructedRegex {
+    if (typeof regex === 'boolean') {
+      return false;
+    } else {
+      return (regex as IValidConstructedRegex).find !== undefined;
+    }
   }
 
   protected regexHasError (regex: IValidConstructedRegex | IInvalidConstructedRegex) : regex is IInvalidConstructedRegex {

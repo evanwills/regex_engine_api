@@ -1,5 +1,12 @@
-import {RegexEngine} from './regex-engine.class'
-import { ICumulativeTestResults, IDelimPair, IRegexConfig, IRegexPair, IRegexTestResult} from './regex-engine.interfaces'
+import { RegexEngine } from './regex-engine.class'
+import {
+  ICumulativeTestResults,
+  IDelimPair,
+  IRegexConfig,
+  IRegexError,
+  IRegexPair
+  // IRegexTestResult
+} from './regex-engine.interfaces'
 
 
 export class RemoteRegex extends RegexEngine {
@@ -7,13 +14,23 @@ export class RemoteRegex extends RegexEngine {
     super(engine);
   }
 
-  public isValid(regex: string, modifiers: string, delimiters?: IDelimPair) : string {
-    // let output = '';
-    const output = '';
-    return output;
+  public getLastError () : IRegexError {
+    return {
+      badCharacter: '',
+      messages: [],
+      offset: -1,
+      rawMessage: '',
+      regexID: 0
+    }
   }
 
-  public test(input: string[], regexes: IRegexPair[]) : ICumulativeTestResults[] {
+  public test (regex: string, modifiers: string, delimiters?: IDelimPair) : boolean {
+    // let output = '';
+    const output = '';
+    return false;
+  }
+
+  public match (input: string[], regexes: IRegexPair[]) : ICumulativeTestResults[] {
     // let output : ICumulativeTestResults[] = [];
     const output : ICumulativeTestResults[] = [];
     return output;

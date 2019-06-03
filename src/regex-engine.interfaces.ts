@@ -86,7 +86,7 @@ export interface IValidConstructedRegex extends IConstructedRegex {
  * IInvalidConstructedRegex is used when a regex does have errors
  */
 export interface IInvalidConstructedRegex extends IConstructedRegex {
-  error: IRegexIsInValid
+  error: IRegexError
 }
 
 /**
@@ -102,7 +102,7 @@ export interface IRegex {
   delimiters: IDelimPair
   modifiers: string,
   regex: string,
-  error: IValidatedRegex
+  error: IRegexIsValid | IRegexIsInValid
 }
 
 /**
@@ -183,7 +183,7 @@ export interface ISimpleTestResult {
  * regexID - the UID of the regex pair the regex came from
  */
 export interface IRegexTestResult extends ISimpleTestResult {
-  error: IValidatedRegex,
+  error: IRegexIsValid | IRegexIsInValid,
   regexID: number
 }
 
@@ -236,6 +236,7 @@ export interface IValidatedRegex {
 export interface IRegexIsValid extends IValidatedRegex {
   valid: true
 }
+
 export interface IRegexIsInValid extends IValidatedRegex {
   error: IRegexError,
   valid: false
