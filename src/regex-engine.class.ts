@@ -79,6 +79,7 @@ export abstract class RegexEngine {
    * @property id UID for the regex engine
    */
   protected id : string;
+
   /**
    * @property modifiersLabel label to be used to identify the
    *         modifiers string
@@ -122,6 +123,11 @@ export abstract class RegexEngine {
       throw new Error(e.errorMsg)
     }
   }
+
+
+  // ======================================================
+  // START: public methods
+
 
   /**
    * getApiURL() returns the URL for the API access point for the
@@ -186,17 +192,23 @@ export abstract class RegexEngine {
     }
   }
 
-  // public getDefaultDelimiters () : IDelimPair {
-  //   return this.defaultDelimiters;
-  // }
+  /**
+   * getDefaultDelimiters() returns the current default delimiters
+   */
+  public getDefaultDelimiters () : IDelimPair {
+    return this.defaultDelimiters;
+  }
 
-  // public setDefaultDelimiters(delimiters: IDelimPair) : true {
-  //   const output = this.getValidDelimiters(delimiters);
-  //   if (output.valid === false) {
-  //     throw new Error(output.error.message);
-  //   }
-  //   return true;
-  // }
+  /**
+   * setDefaultDelimiters() updates the current default delimiters
+   */
+  public setDefaultDelimiters(delimiters: IDelimPair) : true {
+    const output = this.getValidDelimiters(delimiters);
+    if (output.valid === false) {
+      throw new Error(output.error.message);
+    }
+    return true;
+  }
 
   /**
    * delimiterIsRequired() returns TRUE if delimiters are required
@@ -319,7 +331,7 @@ export abstract class RegexEngine {
    *
    * @returns a list of regex test results.
    */
-  public abstract match(input: string[], regexes: IRegexPair[]) : ICumulativeTestResults[];
+  public abstract match(input: string[], regexes: IRegexPair[], chainRegexes: boolean | undefined) : ICumulativeTestResults[];
 
   /**
    * replace() sequentially applies each all regex pairs to each input
@@ -333,6 +345,23 @@ export abstract class RegexEngine {
    * @returns list of modified strings
    */
   public abstract replace(input: string[], regexes: IRegexPair[]) : string[];
+
+  /**
+   * isLocalEngine() tells whether or not the current engine is
+   * local or not
+   */
+  public abstract isLocalEngine() : boolean;
+
+  /**
+   * isRemoteEngine() tells whether or not the current engine is
+   * remote or not
+   */
+  public abstract isRemoteEngine() : boolean;
+
+
+  //  END:  public methods
+  // ======================================================
+  // START: protected methods
 
 
   /**
@@ -397,7 +426,14 @@ export abstract class RegexEngine {
     }
   }
 
+  /**
+   * regexHasError() is a Type Guard method to ensure the regex is invalid
+   * @param regex
+   */
   protected regexHasError (regex: IValidConstructedRegex | IInvalidConstructedRegex) : regex is IInvalidConstructedRegex {
     return (regex as IInvalidConstructedRegex).error !== undefined;
   }
+
+  //  END:  protected methods
+  // ======================================================
 }

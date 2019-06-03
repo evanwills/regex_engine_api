@@ -14,6 +14,11 @@ export class RemoteRegex extends RegexEngine {
     super(engine);
   }
 
+
+  // ======================================================
+  // START: public methods
+
+
   public getLastError () : IRegexError {
     return {
       badCharacter: '',
@@ -25,20 +30,26 @@ export class RemoteRegex extends RegexEngine {
   }
 
   public test (regex: string, modifiers: string, delimiters?: IDelimPair) : boolean {
-    // let output = '';
-    const output = '';
+    // let output = true;
     return false;
   }
 
-  public match (input: string[], regexes: IRegexPair[]) : ICumulativeTestResults[] {
+  public match (input: string[], regexes: IRegexPair[], chainRegexes: boolean | undefined) : ICumulativeTestResults[] {
+    const doChaining = (typeof chainRegexes === 'undefined') ? this.chainRegexes : chainRegexes;
+
     // let output : ICumulativeTestResults[] = [];
-    const output : ICumulativeTestResults[] = [];
-    return output;
+    return [];
   }
 
   public replace(input: string[], regexes: IRegexPair[]) : string[] {
     // let output : string[] = [];
-    const output : string[] = [];
-    return output;
+    return [];
   }
+
+  public isLocalEngine() { return false; };
+  public isRemoteEngine() { return true; };
+
+
+  //  END:  public methods
+  // ======================================================
 }
