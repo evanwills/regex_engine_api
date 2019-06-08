@@ -8,8 +8,11 @@
  * IAPIresponse provides a standardised format for API responses
  *
  * ok - true if there were no errors
+ *
  * code - numeric UID for type of response
+ *
  * content - whatever is needed or supplied by API
+ *
  * returnType - human readable UID for type of response
  */
 export interface IAPIresponse {
@@ -28,6 +31,7 @@ export interface IAPIresponse {
  *       (e.g. vanilla JS) these are just empty strings
  *
  * open - the opening delimiter character for a regex.
+ *
  * close - the closing delimiter character for a regex
  *        NOTE: When a regex engine does not allow paired delimiters
  *              this will default to the opening delimiter
@@ -94,8 +98,11 @@ export interface IInvalidConstructedRegex extends IConstructedRegex {
  * engine to construct a working regex
  *
  * delimiters - the opening and closing delimiters
+ *
  * modifiers - characters to augment the behavior of the regex
+ *
  * regex - the regluar expression pattern itself
+ *
  * error - possible errors the regex engine might have encountered
  */
 export interface IRegex {
@@ -110,7 +117,9 @@ export interface IRegex {
  *
  * id - UID for the regex (may or may not match index in array of
  *      regex pairs)
+ *
  * replace - replacement string used when doing caling replace()
+ *
  * transformEscapedWhiteSpace - if TRUE and escaped whitespace
  *      character sequences are found, then convert those sequences
  *      into the whitespace characters they represent before doing
@@ -127,14 +136,18 @@ export interface IRegexPair extends IRegex {
  * extracted using the error message supplied by the regex engine
  *
  * badCharacter - the character that caused the error
+ *
  * messages - list of messages that were extracted from the raw error
  *      message supplied by the engine
+ *
  * offset - the offset index of the character within the whole string
  *      NOTE: this is used for formatting the error part of the
  *            string to make it easier to debug where the error
  *            occured
+ *
  * rawMessage - error message the engine provided when it encountered
  *      an occured
+ *
  * regexID - (this is probably redundant and may be removed) the UID
  *      of the regex where the error occured
  */
@@ -152,8 +165,10 @@ export interface IRegexError {
  * the match
  *
  * whole - the whole match
+ *
  * parts - an array of captured sub patterns or an object with both
  *         named and indexed captured sub patterns
+ *
  * position - the character offset of the start of the match.
  */
 export interface IRegexMatch {
@@ -168,6 +183,7 @@ export interface IRegexMatch {
  *
  * executionTime - the total time it took to find all matches for a
  *         given input
+ *
  * matches - the list of matched patterns from a single regex
  */
 export interface ISimpleTestResult {
@@ -180,6 +196,7 @@ export interface ISimpleTestResult {
  * context (via the regex ID)
  *
  * error - any possible regex error
+ *
  * regexID - the UID of the regex pair the regex came from
  */
 export interface IRegexTestResult extends ISimpleTestResult {
@@ -193,8 +210,10 @@ export interface IRegexTestResult extends ISimpleTestResult {
  * regex was applied to.
  *
  * inputID - UID for input the regex was applied to
+ *
  * allMatches - all the matches for all the regexes that the input
  *         had applied to it
+ *
  * totalExecutionTime - the total amount of time required to do all
  *         the matches for all the regexes on the single iput
  */
@@ -209,6 +228,7 @@ export interface ICumulativeTestResults {
  * Delimitor errors
  *
  * invalidItems - list of characters that have caused issues
+ *
  * message - the human readable string to identify the error.
  */
 export interface IDelimModError {
@@ -247,25 +267,36 @@ export interface IRegexIsInValid extends IValidatedRegex {
  *
  * allowedDelimiters - list of non-alphanumeric characters that
  *         can be used as regex delimiters
+ *
  * allowedModifiers - list of alphabetical characters that can
  *         augment the regex engine's behavior for a given regex
+ *
  * allowedPairedDelimiters - list of delimPairs containing paired
  *         opening and closing delimiters that can be used by
  *         regex engine
+ *
  * apiURL - URL for remote API end point
+ *
  * chainRegexes - When multiple regex are used in match() mode if
  *         chainRegexes is TRUE, the find/replace is done on input
  *         before handing input off to next regex pair
+ *
  * defaultDelimiters - stores default opening and closing delimiter
  *         character for a regex
+ *
  * defaultModifiers - the default modifiers recommended for the engine
  *         e.g. in JavaScript 'ig' is used (especially in the context
  *              of testing) most of the time.
+ *
  * docsURL - URL where useful documentation can be found for the
  *         regex engine
+ *
  * id - UID for the regex engine
+ *
  * modifiersLabel - label to be used to identify the modifiers string
+ *
  * name - human readable name of the regex engine
+ *
  * type - access type for regex engine (local or remote)
  */
 export interface IRegexConfig {
@@ -273,7 +304,7 @@ export interface IRegexConfig {
   allowedModifiers: string[],
   allowedPairedDelimiters: IDelimPair[]
   apiURL: string,
-  chainRegexes: boolean,
+  matchConfig: IMatchConfigExtra,
   defaultDelimiters: IDelimPair,
   defaultModifiers: string,
   docsURL: string,
@@ -283,4 +314,110 @@ export interface IRegexConfig {
   type: EengineAccess
 }
 
+/**
+ * IMatchConfig is a list of config properties needed when doing
+ * match operations
+ *
+ * chainRegexes - when multiple regexes are supplied, do find and
+ *          replace (after matching) in input before starting match
+ *          using next regex
+ *
+ * maxSubMatchLen - the maximum number of characters a matched
+ *          subpattern should be before it is truncated.
+ *          (Helps with request and rendering performance.)
+ *
+ * maxWholeMatchLen - the maximum number of characters the whole match
+ *          can be before it's truncated.
+ *          (Helps with request & rendering performance.)
+ *
+ * showWhiteSpaceChars - whether or not to convert white space
+ *          characters to a visible representation of those
+ *          characters in whole match and captured sub-patterns
+ *          e.g. [tab], [space], [cr], [lf]
+ *          NOTE: This should always be false for when IMatchConfig
+ *                is used in IRemoteMatchRequest
+ *
+ * truncateLongStr: whether or not to truncate long whole match
+ *          strings and matched sub-pattern strings
+ */
+export interface IMatchConfig {
+  chainRegexes: boolean,
+  maxSubMatchLen: number,
+  maxWholeMatchLen: number,
+  showWhiteSpaceChars: boolean,
+  truncateLongStr: boolean
+}
+
+/**
+ * IMatchConfigLimits used by regex engines to possibile values for
+ * IMatchConfig properties
+ *
+ * maxSubMatchLenLimit - the highest value maxSubMatchLen can be set
+ *           to for this regex engine
+ *
+ * maxWholeMatchLenLimit - the highest value maxWholeMatchLen can be
+ *           set to for this regex engine
+ *
+ * optionalTruncateLongStr - whether or not truncateLongStr can be
+ *           toggled on or off for this regex engine
+ */
+export interface IMatchConfigLimits {
+  maxSubMatchLenLimit: number,
+  maxWholeMatchLenLimit: number,
+  optionalTruncateLongStr: boolean
+}
+
+
+/**
+ * IMatchConfigExtra is a list of all config properties required by
+ * regex engine to allow for safe updating of IMatchConfig properties
+ *
+ * chainRegexes - when multiple regexes are supplied, do find and
+ *          replace (after matching) in input before starting match
+ *          using next regex
+ *
+ * maxSubMatchLen - the maximum number of characters a matched
+ *          subpattern should be before it is truncated.
+ *          (Helps with request and rendering performance.)
+ *
+ * maxWholeMatchLen - the maximum number of characters the whole match
+ *          can be before it's truncated.
+ *          (Helps with request & rendering performance.)
+ *
+ * showWhiteSpaceChars - whether or not to convert white space
+ *          characters to a visible representation of those
+ *          characters in whole match and captured sub-patterns
+ *          e.g. [tab], [space], [cr], [lf]
+ *          NOTE: This should always be false for when IMatchConfig
+ *                is used in IRemoteMatchRequest
+ *
+ * truncateLongStr: whether or not to truncate long whole match
+ *          strings and matched sub-pattern strings
+ *
+ * maxSubMatchLenLimit - the highest value maxSubMatchLen can be set
+ *           to for this regex engine
+ *
+ * maxWholeMatchLenLimit - the highest value maxWholeMatchLen can be
+ *           set to for this regex engine
+ *
+ * optionalTruncateLongStr - whether or not truncateLongStr can be
+ *           toggled on or off for this regex engine
+ */
+export interface IMatchConfigExtra extends IMatchConfig, IMatchConfigLimits {
+}
+
+export interface IRemoteReplaceTest {
+  regexes: IRegexPair
+}
+
+export interface IRemoteReplaceRequest extends IRemoteReplaceTest {
+  input: string[],
+}
+
+export interface IRemoteMatchRequest extends IRemoteReplaceRequest {
+  config: IMatchConfig
+}
+
+export type TmatchConfigLimitProps = keyof IMatchConfigLimits
+export type TmatchConfigProps = keyof IMatchConfig
 // }

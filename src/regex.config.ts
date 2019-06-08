@@ -6,11 +6,20 @@ export const regexEngineConfig : IRegexConfig[] = [
     allowedModifiers: ['g', 'i', 'm', 'u', 'y'],
     allowedPairedDelimiters: [],
     apiURL: '',
-    chainRegexes: true,
     defaultDelimiters: { open: '/', close: '/' },
     defaultModifiers: 'ig',
     docsURL: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions',
     id: 'vanillaJS',
+    matchConfig: {
+      chainRegexes: true,
+      maxSubMatchLen: 300,
+      maxSubMatchLenLimit: 500,
+      maxWholeMatchLen: 300,
+      maxWholeMatchLenLimit: 500,
+      optionalTruncateLongStr: true,
+      showWhiteSpaceChars: false,
+      truncateLongStr: true
+    },
     modifiersLabel: EflagsModifiersLabel.flags,
     name: 'Vanilla JS',
     type: EengineAccess.local
@@ -20,11 +29,20 @@ export const regexEngineConfig : IRegexConfig[] = [
     allowedModifiers: ['g', 'i', 'm', 'u', 'y', 'n', 's', 'x', 'A'],
     allowedPairedDelimiters: [],
     apiURL: '',
-    chainRegexes: true,
     defaultDelimiters: { open: '/', close: '/' },
     defaultModifiers: 'ig',
     docsURL: 'http://xregexp.com/',
     id: 'XRegExp',
+    matchConfig: {
+      chainRegexes: true,
+      maxSubMatchLen: 300,
+      maxSubMatchLenLimit: 500,
+      maxWholeMatchLen: 300,
+      maxWholeMatchLenLimit: 500,
+      optionalTruncateLongStr: true,
+      showWhiteSpaceChars: false,
+      truncateLongStr: true
+    },
     modifiersLabel: EflagsModifiersLabel.flags,
     name: 'XRegExp',
     type: EengineAccess.local
@@ -39,11 +57,20 @@ export const regexEngineConfig : IRegexConfig[] = [
       { open: '{', close: '}' }
     ],
     apiURL: '',
-    chainRegexes: true,
     defaultDelimiters: { open: '`', close: '`' },
     defaultModifiers: 'is',
     docsURL: 'http://php.net/manual/en/book.pcre.php',
     id: 'pcre',
+    matchConfig: {
+      chainRegexes: true,
+      maxSubMatchLen: 300,
+      maxSubMatchLenLimit: 500,
+      maxWholeMatchLen: 300,
+      maxWholeMatchLenLimit: 500,
+      optionalTruncateLongStr: false,
+      showWhiteSpaceChars: false,
+      truncateLongStr: true
+    },
     modifiersLabel: EflagsModifiersLabel.modifiers,
     name: 'PHP PCRE',
     type: EengineAccess.remote
