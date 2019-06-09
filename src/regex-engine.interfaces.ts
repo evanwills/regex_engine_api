@@ -388,6 +388,7 @@ export interface IMatchConfigLimits {
  *          characters to a visible representation of those
  *          characters in whole match and captured sub-patterns
  *          e.g. [tab], [space], [cr], [lf]
+ *
  *          NOTE: This should always be false for when IMatchConfig
  *                is used in IRemoteMatchRequest
  *
@@ -398,7 +399,7 @@ export interface IMatchConfigLimits {
  *           to for this regex engine
  *
  * maxWholeMatchLenLimit - the highest value maxWholeMatchLen can be
- *           set to for this regex engine
+ *           set to for this regex   engine
  *
  * optionalTruncateLongStr - whether or not truncateLongStr can be
  *           toggled on or off for this regex engine
@@ -406,17 +407,43 @@ export interface IMatchConfigLimits {
 export interface IMatchConfigExtra extends IMatchConfig, IMatchConfigLimits {
 }
 
-export interface IRemoteReplaceTest {
-  regexes: IRegexPair
-}
-
-export interface IRemoteReplaceRequest extends IRemoteReplaceTest {
+export interface IRemoteReplace {
   input: string[],
+  regexes: IRegexPair[],
 }
 
-export interface IRemoteMatchRequest extends IRemoteReplaceRequest {
-  config: IMatchConfig
+export interface IRemoteMatch extends IRemoteReplace {
+  config: IMatchConfig,
+  input: string[],
+  regexes: IRegexPair[]
 }
+
+export interface IRemoteTest {
+  regex: IRegexPair
+}
+
+
+// export interface IRemoteRequest {
+//   action: string,
+//   payload: IRemoteTest | IRemoteReplace | IRemoteMatch
+// }
+
+export interface IRemoteMatchRequest { // extends IRemoteRequest {
+  action: 'match',
+  payload: IRemoteMatch
+}
+
+export interface IRemoteReplaceRequest { // extends IRemoteRequest {
+  action: 'replace',
+  payload: IRemoteReplace
+}
+
+export interface IRemoteTestRequest { // xtends IRemoteRequest {
+  action: 'test',
+  payload: IRemoteTest
+}
+
+
 
 export type TmatchConfigLimitProps = keyof IMatchConfigLimits
 export type TmatchConfigProps = keyof IMatchConfig

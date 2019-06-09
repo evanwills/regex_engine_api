@@ -17,6 +17,7 @@ import { IConstructedRegex,
          IValidConstructedRegex
       } from './regex-engine.interfaces'
 
+
 export class LocalRegex extends RegexEngine {
   protected lastRegexError = '';
   protected lastRegexHadError = false;

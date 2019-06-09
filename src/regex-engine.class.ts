@@ -9,6 +9,8 @@ import {
   IMatchConfigExtra,
   IRegexConfig,
   IRegexError,
+  IRegexIsInValid,
+  IRegexIsValid,
   IRegexPair,
   IRegexTestResult,
   IValidatedDelimiters,
@@ -348,20 +350,56 @@ export abstract class RegexEngine {
    * @param value new value for matchConfig property
    */
   public setMatchConfigProp(prop: keyof IMatchConfig, value: number | boolean) : void {
-    if (typeof this.matchConfig[prop] === typeof value) {
-      const limited = prop + 'Limit';
-      if (this.isMatchConfigLimitedProp(limited)) {
-        this.matchConfig[prop] = (this.matchConfig[limited] < value) ? this.matchConfig[limited] : value;
-      } else {
-        if (prop === 'truncateLongStr' && typeof value === 'boolean') {
-          this.matchConfig[prop] = (this.matchConfig.optionalTruncateLongStr) ? value : this.matchConfig[prop];
-        } else {
-          this.matchConfig[prop] = value;
-        }
-      }
-    } else {
-      throw new Error('setMatchConfigProp() expects value of ' + prop + ' to be a ' + typeof this.matchConfig[prop] + '. ' + typeof value + ' given.');
+    let newConfig = {...this.matchConfig};
+    const oldValue = newConfig[prop];
+
+    if (typeof newConfig[prop] !== typeof value) {
+      throw new Error('setMatchConfigProp() expects value of ' + prop + ' to be a ' + typeof oldValue + '. ' + typeof value + ' given.');
     }
+
+    switch (prop) {
+      case 'maxSubMatchLen':
+      case 'maxWholeMatchLen':
+        const limitedValue : number = (prop === 'maxSubMatchLen') ? this.matchConfig.maxSubMatchLenLimit : this.matchConfig.maxWholeMatchLenLimit;
+        if (typeof value === 'number') {
+          const newValue : number = (limitedValue < value) ? limitedValue : value;
+          newConfig[prop] = newValue;
+        }
+        break;
+
+      case 'truncateLongStr':
+        if (typeof value === 'boolean' && typeof oldValue === 'boolean') {
+          newConfig = {
+            ...newConfig,
+            truncateLongStr: (newConfig.optionalTruncateLongStr) ? value : oldValue
+          };
+        }
+        break;
+
+      case 'chainRegexes':
+      case 'showWhiteSpaceChars':
+        if (typeof value === 'boolean') {
+          newConfig[prop] = value;
+        }
+    }
+
+    this.matchConfig = newConfig;
+
+
+    // if (typeof this.matchConfig[prop] === typeof value) {
+    //   const limited = prop + 'Limit';
+    //   if (this.isMatchConfigLimitedProp(limited) && typeof value === 'number') {
+    //     this.matchConfig[prop] = (this.matchConfig[limited] < value) ? this.matchConfig[limited] : value;
+    //   } else {
+    //     if (prop === 'truncateLongStr' && typeof value === 'boolean') {
+    //       this.matchConfig[prop] = (this.matchConfig.optionalTruncateLongStr) ? value : this.matchConfig[prop];
+    //     } else {
+    //       this.matchConfig[prop] = value;
+    //     }
+    //   }
+    // } else {
+    //   throw new Error('setMatchConfigProp() expects value of ' + prop + ' to be a ' + typeof this.matchConfig[prop] + '. ' + typeof value + ' given.');
+    // }
   }
 
   /**
@@ -540,8 +578,15 @@ export abstract class RegexEngine {
   protected isMatchConfigProp (key: string | TmatchConfigProps) : key is TmatchConfigProps {
     const allProps = Object.getOwnPropertyNames(this.matchConfig);
     return (allProps.indexOf(key) > -1);
-
   }
+
+  protected isIRegexIsValid (result : IRegexIsValid | IRegexIsInValid | any) : result is IRegexIsValid {
+    return (result as IRegexIsValid).valid === true;
+  }
+
+  // protected isIRegexIsInValid (result : IRegexIsInValid | any) : result is IRegexIsInValid {
+  //   return (result as IRegexIsInValid).error !== 'undefined';
+  // }
 
 
   //  END:  shared type guard methods

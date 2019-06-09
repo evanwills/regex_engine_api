@@ -5,18 +5,35 @@ import {
   IMatchConfig,
   IRegexConfig,
   IRegexError,
-  IRegexPair
+  IRegexIsInValid,
+  IRegexIsValid,
+  IRegexPair,
+  // IRemoteMatch,
+  IRemoteMatchRequest,
+  // IRemoteReplace,
+  IRemoteReplaceRequest,
+  // IRemoteTest,
+  IRemoteTestRequest
   // IRegexTestResult
 } from './regex-engine.interfaces'
+
+
+export type TrequestMatchGenerator = (request: IRemoteMatchRequest) => Promise<ICumulativeTestResults[]>
+
+export type TrequestReplaceGenerator = (request: IRemoteReplaceRequest) => Promise<string[]>
+
+export type TrequestTestGenerator = (request: IRemoteTestRequest) => Promise<IRegexIsValid|IRegexIsInValid>
 
 
 export class RemoteRegex extends RegexEngine {
 
   protected lastTestPromice: Promise<boolean> | undefined;
   protected lastError: IRegexError | undefined;
+  protected requestGenerator: TrequestMatchGenerator | TrequestReplaceGenerator | TrequestTestGenerator;
 
-  constructor (engine: IRegexConfig) {
+  constructor (engine: IRegexConfig, requestGenerator: TrequestMatchGenerator | TrequestReplaceGenerator | TrequestTestGenerator ) {
     super(engine);
+    this.requestGenerator = requestGenerator;
   }
 
 
@@ -69,15 +86,19 @@ export class RemoteRegex extends RegexEngine {
    *
    * @returns a list of regex test results.
    */
-  public match (input: string[], regexes: IRegexPair[], chainRegexes: boolean | undefined) : Promise<ICumulativeTestResults[]> {
-    const remoteMatchConfig : IMatchConfig = {
-      ...this.matchConfig,
-      chainRegexes: (typeof chainRegexes === 'undefined') ? this.matchConfig.chainRegexes : chainRegexes,
-      showWhiteSpaceChars: false
-    };
+  public match (input: string[], regexes: IRegexPair[]) : Promise<ICumulativeTestResults[]> {
+    const {maxSubMatchLenLimit, maxWholeMatchLenLimit, optionalTruncateLongStr, ...remoteMatchConfig} = this.matchConfig;
 
-    // let output : ICumulativeTestResults[] = [];
-    return Promise.resolve([]);
+    const request : IRemoteMatchRequest = {
+      action: 'match',
+      payload: {
+        config: remoteMatchConfig,
+        input: input,
+        regexes: regexes
+      }
+    }
+
+    return this.requestGenerator(request);
   }
 
   /**
@@ -92,8 +113,15 @@ export class RemoteRegex extends RegexEngine {
    * @returns list of modified strings
    */
   public replace(input: string[], regexes: IRegexPair[]) : Promise<string[]> {
-    // let output : string[] = [];
-    return Promise.resolve([]);
+    const request : IRemoteReplaceRequest = {
+      action: 'replace',
+      payload: {
+        input: input,
+        regexes: regexes
+      }
+    }
+
+    return this.requestGenerator(request);
   }
 
   /**
@@ -105,9 +133,29 @@ export class RemoteRegex extends RegexEngine {
    *
    * @returns TRUE if regex is valid, FALSE otherwise.
    */
-  public test (regex: string, modifiers: string, delimiters?: IDelimPair) : Promise<boolean> {
-    this.lastTestPromice = Promise.resolve(false);
-    return this.lastTestPromice;
+  public async test (regex: string, modifiers: string, delimiters?: IDelimPair) : Promise<boolean> {
+    const request : IRemoteTestRequest = {
+      action: 'test',
+      payload: {
+        regex: regex
+      }
+    }
+
+    const testPromice = this.requestGenerator(request);
+    let ok = true;
+
+    try {
+      const result = await testPromice();
+
+    } catch (e) {
+      ok = false
+      const errorMessage = e.message;
+    }
+
+    if (ok === true) {
+
+    }
+    return testPromice
   }
 
 
