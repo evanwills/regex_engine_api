@@ -425,26 +425,54 @@ export interface IRemoteTest {
 }
 
 
-// export interface IRemoteRequest {
-//   action: string,
-//   payload: IRemoteTest | IRemoteReplace | IRemoteMatch
-// }
-
+/**
+ * IRemoteMatchRequest structure of request JSON object sent for
+ * 'match' type remote API calls
+ *
+ * action - what the remote API is to do (must always be 'match')
+ *
+ * payload - what the remote API uses to do it.
+ */
 export interface IRemoteMatchRequest { // extends IRemoteRequest {
   action: 'match',
   payload: IRemoteMatch
 }
 
+
+
+/**
+ * IRemoteReplaceRequest structure of request JSON object sent for
+ * 'replace' type remote API calls
+ *
+ * action - what the remote API is to do (must always be 'replace')
+ *
+ * payload - what the remote API uses to do it.
+ */
 export interface IRemoteReplaceRequest { // extends IRemoteRequest {
   action: 'replace',
   payload: IRemoteReplace
 }
 
+/**
+ * IRemoteTestRequest structure of request JSON object sent for
+ * 'test' type remote API calls
+ *
+ * action - what the remote API is to do (must always be 'test')
+ *
+ * payload - what the remote API uses to do it.
+ */
 export interface IRemoteTestRequest { // xtends IRemoteRequest {
   action: 'test',
   payload: IRemoteTest
 }
 
+/**
+ * IRequstGenerator callback function interface for used for
+ * generating HTTP requests to remote server API
+ *
+ * @param request object type appropriate for specific request
+ * @returns object appropriated for specific request.
+ */
 export interface IRequstGenerator {
   (request: IRemoteMatchRequest): Promise<ICumulativeTestResults[]>,
   (request: IRemoteReplaceRequest) : Promise<string[]>,
