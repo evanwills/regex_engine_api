@@ -419,7 +419,9 @@ export interface IRemoteMatch extends IRemoteReplace {
 }
 
 export interface IRemoteTest {
-  regex: IRegexPair
+  regex: string,
+  modifiers: string,
+  delimiters: IDelimPair
 }
 
 
@@ -443,6 +445,11 @@ export interface IRemoteTestRequest { // xtends IRemoteRequest {
   payload: IRemoteTest
 }
 
+export interface IRequstGenerator {
+  (request: IRemoteMatchRequest): Promise<ICumulativeTestResults[]>,
+  (request: IRemoteReplaceRequest) : Promise<string[]>,
+  (request: IRemoteTestRequest) : Promise<IRegexIsValid|IRegexIsInValid>
+}
 
 
 export type TmatchConfigLimitProps = keyof IMatchConfigLimits

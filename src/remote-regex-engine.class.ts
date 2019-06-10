@@ -12,26 +12,21 @@ import {
   IRemoteMatchRequest,
   // IRemoteReplace,
   IRemoteReplaceRequest,
-  // IRemoteTest,
-  IRemoteTestRequest
+  IRemoteTest,
+  IRemoteTestRequest,
+  IRequstGenerator
   // IRegexTestResult
 } from './regex-engine.interfaces'
 
-
-export type TrequestMatchGenerator = (request: IRemoteMatchRequest) => Promise<ICumulativeTestResults[]>
-
-export type TrequestReplaceGenerator = (request: IRemoteReplaceRequest) => Promise<string[]>
-
-export type TrequestTestGenerator = (request: IRemoteTestRequest) => Promise<IRegexIsValid|IRegexIsInValid>
 
 
 export class RemoteRegex extends RegexEngine {
 
   protected lastTestPromice: Promise<boolean> | undefined;
   protected lastError: IRegexError | undefined;
-  protected requestGenerator: TrequestMatchGenerator | TrequestReplaceGenerator | TrequestTestGenerator;
+  protected requestGenerator: IRequstGenerator;
 
-  constructor (engine: IRegexConfig, requestGenerator: TrequestMatchGenerator | TrequestReplaceGenerator | TrequestTestGenerator ) {
+  constructor (engine: IRegexConfig, requestGenerator: IRequstGenerator) {
     super(engine);
     this.requestGenerator = requestGenerator;
   }
@@ -86,15 +81,15 @@ export class RemoteRegex extends RegexEngine {
    *
    * @returns a list of regex test results.
    */
-  public match (input: string[], regexes: IRegexPair[]) : Promise<ICumulativeTestResults[]> {
+  public match (inputs: string[], regexPairs: IRegexPair[]) : Promise<ICumulativeTestResults[]> {
     const {maxSubMatchLenLimit, maxWholeMatchLenLimit, optionalTruncateLongStr, ...remoteMatchConfig} = this.matchConfig;
 
     const request : IRemoteMatchRequest = {
       action: 'match',
       payload: {
         config: remoteMatchConfig,
-        input: input,
-        regexes: regexes
+        input: inputs,
+        regexes: regexPairs
       }
     }
 
@@ -112,12 +107,12 @@ export class RemoteRegex extends RegexEngine {
    *
    * @returns list of modified strings
    */
-  public replace(input: string[], regexes: IRegexPair[]) : Promise<string[]> {
+  public replace(inputs: string[], regexPairs: IRegexPair[]) : Promise<string[]> {
     const request : IRemoteReplaceRequest = {
       action: 'replace',
       payload: {
-        input: input,
-        regexes: regexes
+        input: inputs,
+        regexes: regexPairs
       }
     }
 
@@ -133,29 +128,42 @@ export class RemoteRegex extends RegexEngine {
    *
    * @returns TRUE if regex is valid, FALSE otherwise.
    */
-  public async test (regex: string, modifiers: string, delimiters?: IDelimPair) : Promise<boolean> {
+  public async test (regexStr: string, modifiersStr: string, delimiters?: IDelimPair) : Promise<boolean> {
     const request : IRemoteTestRequest = {
       action: 'test',
       payload: {
-        regex: regex
+        delimiters: (typeof delimiters !== 'undefined') ? delimiters : this.defaultDelimiters,
+        modifiers: modifiersStr,
+        regex: regexStr,
       }
     }
+    let result : IRegexIsValid | IRegexIsInValid | null = null;
+    let errorMessage : string = '';
 
-    const testPromice = this.requestGenerator(request);
+    const testPromice : Promise<IRegexIsValid|IRegexIsInValid> = this.requestGenerator(request);
     let ok = true;
 
     try {
-      const result = await testPromice();
-
+      // TODO: work out how to do this correctly.
+      result = await testPromice;
+      ok = true;
     } catch (e) {
       ok = false
-      const errorMessage = e.message;
+      errorMessage = e.message;
     }
 
-    if (ok === true) {
-
+    if (ok === true && typeof result !== null) {
+      if (this.isIRegexIsValid(result)) {
+        return Promise.resolve(true);
+      } else if (this.isIRegexIsValid(result)) {
+        this.lastError = result.error;
+        return Promise.resolve(false);
+      } else {
+        return Promise.reject('Invalid response from server. Was expecting IRegexIsValid or IRegexIsInValid type objects');
+      }
+    } else {
+      return Promise.reject(errorMessage);
     }
-    return testPromice
   }
 
 

@@ -438,12 +438,12 @@ export abstract class RegexEngine {
    * NOTE: each input should be modified by each regex pair before
    *       passing it to the next regex pair
    *
-   * @param input list of sample strings to test the regex against
-   * @param regexes list of regex pair objects to test the inputs with
+   * @param inputs list of sample strings to test the regex against
+   * @param regexPairs list of regex pair objects to test the inputs with
    *
    * @returns a list of regex test results.
    */
-  public abstract match(input: string[], regexes: IRegexPair[], chainRegexes: boolean | undefined) : Promise<ICumulativeTestResults[]>;
+  public abstract match(inputs: string[], regexPairs: IRegexPair[], chainRegexes: boolean | undefined) : Promise<ICumulativeTestResults[]>;
 
   /**
    * replace() sequentially applies each all regex pairs to each input
@@ -451,23 +451,23 @@ export abstract class RegexEngine {
    * NOTE: replace acts basically the same as match but the modified
    *       string is returned instead of the list of matches.
    *
-   * @param input list of sample strings to test the regex against
-   * @param regexes list of regex pair objects to test the inputs with
+   * @param inputs list of sample strings to test the regex against
+   * @param regexPairs list of regex pair objects to test the inputs with
    *
    * @returns list of modified strings
    */
-  public abstract replace(input: string[], regexes: IRegexPair[]) : Promise<string[]>;
+  public abstract replace(inputs: string[], regexPairs: IRegexPair[]) : Promise<string[]>;
 
   /**
    * test() tests a given regular expression to see if it's valid
    *
-   * @param regex regular expression pattern
-   * @param modifiers modifier/flags to augment the regex
+   * @param regexStr regular expression pattern
+   * @param modifiersStr modifier/flags to augment the regex
    * @param delimiters delimiters (if engine requires them)
    *
    * @returns TRUE if regex is valid, FALSE otherwise.
    */
-  public abstract test(regex: string, modifiers: string, delimiters?: IDelimPair) : Promise<boolean>;
+  public abstract test(regexStr: string, modifiersStr: string, delimiters?: IDelimPair) : Promise<boolean>;
 
 
   //  END:  Asyncronous methods
@@ -582,6 +582,10 @@ export abstract class RegexEngine {
 
   protected isIRegexIsValid (result : IRegexIsValid | IRegexIsInValid | any) : result is IRegexIsValid {
     return (result as IRegexIsValid).valid === true;
+  }
+
+  protected isIRegexIsInValid (result : IRegexIsValid | IRegexIsInValid | any) : result is IRegexIsValid {
+    return (result as IRegexIsInValid).error !== undefined;
   }
 
   // protected isIRegexIsInValid (result : IRegexIsInValid | any) : result is IRegexIsInValid {
