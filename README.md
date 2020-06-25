@@ -12,4 +12,13 @@ It's intended that this can be used as part of systems that allow users to creat
 
 It is assumed that any authentication with back end servers is managed outside this module.
 
-It also does not handle any of the view side of things.
+It also does not handle any of the view side of things. It also doesn't handle state. 
+
+## What it does do
+
+It just works with regular expressions. 
+
+You give it some text and one or more regular expressions and it either:
+* test the regex to see if it's valid, 
+* applies the regex(s) to string(s) to find any matches or 
+* transforms the string(s) by applying the regex(s) (in series) to the string and returning the result.
