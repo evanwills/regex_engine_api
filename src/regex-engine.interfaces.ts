@@ -178,7 +178,7 @@ export interface IRegexMatch {
 }
 
 /**
- * ISimpleTestResult is the most basic for of result, it just gives
+ * ISimpleTestResult is the most basic form of result, it just gives
  * the execution time and any matched patterns found
  *
  * executionTime - the total time it took to find all matches for a
@@ -349,8 +349,8 @@ export interface IMatchConfig {
 }
 
 /**
- * IMatchConfigLimits used by regex engines to possibile values for
- * IMatchConfig properties
+ * IMatchConfigLimits used by regex engines to limit possibile values
+ * for IMatchConfig properties
  *
  * maxSubMatchLenLimit - the highest value maxSubMatchLen can be set
  *           to for this regex engine
@@ -461,7 +461,7 @@ export interface IRemoteReplaceRequest { // extends IRemoteRequest {
  *
  * payload - what the remote API uses to do it.
  */
-export interface IRemoteTestRequest { // xtends IRemoteRequest {
+export interface IRemoteTestRequest { // extends IRemoteRequest {
   action: 'test',
   payload: IRemoteTest
 }
