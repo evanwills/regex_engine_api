@@ -46,7 +46,7 @@ export interface IRegexMatchReplace extends IRegex {
   delimiters: IDelimiters,
   // Replacement string/pattern
   replace: string,
-  // Whether or not to transform white space escape sequences into their normal white space character equivalents
+  // Whether or not to transform white space escape sequences in the `replace` string into their normal white space character equivalents
   transformWhiteSpace: boolean
 }
 
@@ -58,6 +58,18 @@ export interface IMatchConfig {
   // The maximum number of characters the returned sample should be.
   maxReturnSampleLen: number
 }
+
+type Samples {
+  // List of sample strings regexes are to be applyed to
+  sampleStrs: [string],
+  // If splitChar is not empry string, split the sample string on that chatacter
+  splitChar: string,
+  // Trim whitec space from begining and end of samples before processing regexes
+  trimBefore: boolean,
+  // Trim whitec space from end of samples after processing regexes
+  trimAfter: boolean
+}
+
 
 
 

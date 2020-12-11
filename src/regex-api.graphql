@@ -61,7 +61,19 @@ type MatchConfig {
   maxWholeMatchLen: number
 }
 
-
+type Samples {
+  """List of sample strings regexes are to be applyed to"""
+  sampleStrs: [string],
+  """If splitChar is not empty string, split the sample string on that chatacter"""
+  splitChar: string,
+  """Trim whitec space from begining and end of samples before processing regexes"""
+  trimBefore: boolean,
+  """Trim whitec space from end of samples after processing regexes"""
+  trimAfter: boolean
+  trimBefore: boolean,
+  trimAfter: boolean
+  
+}
 
 # -----------------------------------------------
 # START: Request types
