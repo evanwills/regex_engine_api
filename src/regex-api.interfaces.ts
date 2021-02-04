@@ -10,10 +10,9 @@ export interface IAPIResponse {
   // Code for response export interface success/error export interface
   code: number,
   // List of results for test of each supplied regex
-  content: [string | IRegexError | ITestResponse | IMatchResponse | IReplaceResponse],
+  content: [string | IRegexError | ITestResponse | IMatchResponse | IReplaceResponse] | IAPIConfig,
   // Human readable description of success/error export interface
   message: string
-
 }
 
 
@@ -59,7 +58,7 @@ export interface IMatchConfig {
   maxReturnSampleLen: number
 }
 
-type Samples {
+export interface ISamples {
   // List of sample strings regexes are to be applyed to
   sampleStrs: [string],
   // If splitChar is not empry string, split the sample string on that chatacter
@@ -77,8 +76,11 @@ type Samples {
 // START: Request export interfaces
 
 
+export interface IAPIrequest {
+  type: ERequestMode
+}
 
-export interface IAPItestRequest {
+export interface IAPItestRequest extends IAPIrequest {
   type: ERequestMode,
   // List of regexes to be tested for validity
   regexes: [IRegex]
@@ -102,6 +104,9 @@ export interface IAPImatchRequest extends IAPIreplaceRequest {
   matchConfig: IMatchConfig
 }
 
+export interface IAPIconfigRequest extends IAPIrequest {
+  type: ERequestMode.config,
+}
 
 
 //  END:  Request export interfaces
@@ -150,6 +155,9 @@ export interface IAPIreplaceResponse extends IAPIResponse {
   hasTiming: boolean
 }
 
+export interface IAPIconfigResponse {
+
+}
 
 // - - - - - - - - - - - - - - - - - - - - - - - -
 // START: Response sub-type interfaces
@@ -211,6 +219,9 @@ export interface ITransformedSample {
   duration: number
 }
 
+export interface IAPIConfig {
+
+}
 
 
 //  END:  Response sub-type interfaces
@@ -229,7 +240,8 @@ export interface ITransformedSample {
 enum ERequestMode {
   test,
   match,
-  replace
+  replace,
+  config // Get API's current client specific config settings
 }
 
 //  END:  Enums

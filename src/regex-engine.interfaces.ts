@@ -76,21 +76,25 @@ export enum EflagsModifiersLabel {
  */
 export interface IConstructedRegex {
   regexID: number,
-  replace: string
+  find: RegExp | false,
+  replace: string,
+  error: IValidatedRegex
 }
 
 /**
- * IValidConstructedRegex is used when a regex has no errors
+ * IValidConstRegex is used when a regex has no errors
  */
-export interface IValidConstructedRegex extends IConstructedRegex {
-  find: RegExp
+export interface IValidConstRegex extends IConstructedRegex {
+  find: RegExp,
+  error: IRegexIsValid
 }
 
 /**
- * IInvalidConstructedRegex is used when a regex does have errors
+ * IInvalidConstRegex is used when a regex does have errors
  */
-export interface IInvalidConstructedRegex extends IConstructedRegex {
-  error: IRegexError
+export interface IInvalidConstRegex extends IConstructedRegex {
+  find: false,
+  error: IRegexIsInvalid
 }
 
 /**
@@ -109,7 +113,7 @@ export interface IRegex {
   delimiters: IDelimPair
   modifiers: string,
   regex: string,
-  error: IRegexIsValid | IRegexIsInValid
+  error: IRegexIsValid | IRegexIsInvalid
 }
 
 /**
@@ -140,8 +144,9 @@ export interface IRegexPair extends IRegex {
  * messages - list of messages that were extracted from the raw error
  *      message supplied by the engine
  *
- * offset - the offset index of the character within the whole string
- *      NOTE: this is used for formatting the error part of the
+ * offset - the offset index of the bad character within the whole
+ *      string
+ *      NOTE: This is used for formatting the error part of the
  *            string to make it easier to debug where the error
  *            occured
  *
@@ -200,7 +205,7 @@ export interface ISimpleTestResult {
  * regexID - the UID of the regex pair the regex came from
  */
 export interface IRegexTestResult extends ISimpleTestResult {
-  error: IRegexIsValid | IRegexIsInValid,
+  error: IRegexIsValid | IRegexIsInvalid,
   regexID: number
 }
 
@@ -250,14 +255,16 @@ export interface IValidatedDelimiters extends IValidatedModDelim {
 // export ReplacedInput: Array<string>
 
 export interface IValidatedRegex {
-  valid: boolean
+  valid: boolean,
+  error: IRegexError | null
 }
 
 export interface IRegexIsValid extends IValidatedRegex {
-  valid: true
+  valid: true,
+  error: null
 }
 
-export interface IRegexIsInValid extends IValidatedRegex {
+export interface IRegexIsInvalid extends IValidatedRegex {
   error: IRegexError,
   valid: false
 }
@@ -476,7 +483,7 @@ export interface IRemoteTestRequest { // extends IRemoteRequest {
 export interface IRequstGenerator {
   (request: IRemoteMatchRequest): Promise<ICumulativeTestResults[]>,
   (request: IRemoteReplaceRequest) : Promise<string[]>,
-  (request: IRemoteTestRequest) : Promise<IRegexIsValid|IRegexIsInValid>
+  (request: IRemoteTestRequest) : Promise<IRegexIsValid|IRegexIsInvalid>
 }
 
 

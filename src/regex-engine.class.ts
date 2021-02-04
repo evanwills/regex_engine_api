@@ -4,18 +4,18 @@ import {
   ICumulativeTestResults,
   IDelimModError,
   IDelimPair,
-  IInvalidConstructedRegex,
+  IInvalidConstRegex,
   IMatchConfig,
   IMatchConfigExtra,
   IRegexConfig,
   IRegexError,
-  IRegexIsInValid,
+  IRegexIsInvalid,
   IRegexIsValid,
   IRegexPair,
   IRegexTestResult,
   IValidatedDelimiters,
   IValidatedModifiers,
-  IValidConstructedRegex,
+  IValidConstRegex,
   TmatchConfigLimitProps,
   TmatchConfigProps
 } from './regex-engine.interfaces'
@@ -49,17 +49,18 @@ export abstract class RegexEngine {
   protected apiURL : string;
 
   /**
-   * @property chainRegexes - When multiple regex are used in match()
-   *         mode if chainRegexes is TRUE, the find/replace is done
-   *         on input before handing input off to next regex pair
+   * @property matchConfig - is a list of all config properties
+   *                         required by regex engine to allow
+   *                         for safe updating of IMatchConfig
+   *                         properties
    */
-  protected matchConfig: IMatchConfigExtra;
+  protected matchConfig : IMatchConfigExtra;
 
   /**
    * @property defaultDelimiters - stores default opening and closing
    *         delimiter character for a regex
    */
-  protected defaultModifiers: string = '';
+  protected defaultModifiers : string = '';
 
   /**
    * @property defaultModifiers the default modifiers recommended
@@ -543,11 +544,11 @@ export abstract class RegexEngine {
    * isValidRegex() is a Type Guard method to ensure the regex is valid
    * @param regex
    */
-  protected isValidRegex (regex: IValidConstructedRegex | IInvalidConstructedRegex | false) : regex is IValidConstructedRegex {
+  protected isValidRegex (regex: IValidConstRegex | IInvalidConstRegex | false) : regex is IValidConstRegex {
     if (typeof regex === 'boolean') {
       return false;
     } else {
-      return (regex as IValidConstructedRegex).find !== undefined;
+      return (regex as IValidConstRegex).find !== undefined;
     }
   }
 
@@ -555,8 +556,8 @@ export abstract class RegexEngine {
    * regexHasError() is a Type Guard method to ensure the regex is invalid
    * @param regex
    */
-  protected regexHasError (regex: IValidConstructedRegex | IInvalidConstructedRegex) : regex is IInvalidConstructedRegex {
-    return (regex as IInvalidConstructedRegex).error !== undefined;
+  protected regexHasError (regex: IValidConstRegex | IInvalidConstRegex) : regex is IValidConstRegex {
+    return (regex as IInvalidConstRegex).error !== undefined;
   }
 
   /**
@@ -580,16 +581,16 @@ export abstract class RegexEngine {
     return (allProps.indexOf(key) > -1);
   }
 
-  protected isIRegexIsValid (result : IRegexIsValid | IRegexIsInValid | any) : result is IRegexIsValid {
+  protected isIRegexIsValid (result : IRegexIsValid | IRegexIsInvalid | any) : result is IRegexIsValid {
     return (result as IRegexIsValid).valid === true;
   }
 
-  protected isIRegexIsInValid (result : IRegexIsValid | IRegexIsInValid | any) : result is IRegexIsValid {
-    return (result as IRegexIsInValid).error !== undefined;
+  protected isIRegexIsInvalid (result : IRegexIsValid | IRegexIsInvalid | any) : result is IRegexIsValid {
+    return (result as IRegexIsInvalid).error !== undefined;
   }
 
-  // protected isIRegexIsInValid (result : IRegexIsInValid | any) : result is IRegexIsInValid {
-  //   return (result as IRegexIsInValid).error !== 'undefined';
+  // protected isIRegexIsInvalid (result : IRegexIsInvalid | any) : result is IRegexIsInvalid {
+  //   return (result as IRegexIsInvalid).error !== 'undefined';
   // }
 
 

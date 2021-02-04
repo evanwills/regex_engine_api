@@ -85,7 +85,8 @@ class RegexAPI
     private $_modes = array(
         'test',
         'match',
-        'replace'
+        'replace',
+        'config' // return API's client specific config settings
     );
 
     /**

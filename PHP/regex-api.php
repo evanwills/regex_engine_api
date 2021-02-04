@@ -39,7 +39,7 @@ if (!file_exists(__DIR__.'regex-api.class.php')) {
     echo json_encode(
         array(
             'ok' => false,
-            'code' => 300,
+            'code' => 500,
             'content' => array(''),
             'message' => 'Server error: Could not find regex API code',
             'hasTiming' => false
